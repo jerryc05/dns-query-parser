@@ -21,12 +21,11 @@ pub(crate) fn iter_to_str(iter: &mut Iter<u8>, str: &mut String) {
       for _ in 0..*byte {
         let u8_arr = &[*iter.next().unwrap()];
 
-        if cfg!(debug_assertions) {
+        #[cfg(debug_assertions)] {
           str.push_str(&String::from_utf8_lossy(u8_arr));
-        } else {
-          str.push_str(unsafe {
-            from_utf8_unchecked(u8_arr)
-          });
+        }
+        #[cfg(not(debug_assertions))] {
+          str.push_str(unsafe { from_utf8_unchecked(u8_arr) });
         }
       }
     }
