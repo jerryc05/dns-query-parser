@@ -18,7 +18,7 @@ jobs:
       run: rustup show
 
     - name: Build
-      run: cargo build --verbose
+      run: cargo build -v
 
     - name: Run tests
-      run: cargo examples --verbose
+      run: cargo test -v
