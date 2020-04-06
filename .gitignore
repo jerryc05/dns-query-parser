@@ -17,5 +17,5 @@ Cargo.lock
 .idea/**/shelf
 .idea/deployment.xml
 
-# Temporary test files that shall not sync
+# Temporary examples files that shall not sync
 no_sync_*

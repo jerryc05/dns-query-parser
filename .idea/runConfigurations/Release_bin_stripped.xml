@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Release bin stripped" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
     <option name="channel" value="DEFAULT" />
-    <option name="command" value="run --release --verbose" />
+    <option name="command" value="run --release --example runner --verbose" />
     <option name="allFeatures" value="false" />
     <option name="nocapture" value="false" />
     <option name="emulateTerminal" value="false" />

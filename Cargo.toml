@@ -1,13 +1,13 @@
 [package]
-name = "hosts-man"
+name = "dns-query-parser"
 version = "0.1.0"
 authors = ["Ziyan \"Jerry\" Chen <jerryc443@gmail.com>"]
 edition = "2018"
-description = "A \"hosts\" manager for everyone."
+description = "A simple DNS query parser."
 #documentation = "https://docs.rs/???"
 readme = "README.md"
 #homepage = "https://???.rs/"
-repository = "https://github.com/jerryc05/hosts-man/"
+repository = "https://github.com/jerryc05/dns-query-parser"
 license = "GPL-3.0-or-later"
 keywords = ["dns", "hosts"]
 categories = [

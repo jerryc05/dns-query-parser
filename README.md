@@ -1,6 +1,6 @@
-# Hosts Manager - `hosts-man`
+# DNS Query Parser - `dns-query-parser`
 
-A "hosts" manager for everyone.
+A simple DNS query parser.
 
 ## Usage
 
