@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::net::{TcpStream, ToSocketAddrs};
 use std::time::{Instant, Duration};
 

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::net::IpAddr;
 use std::path::Path;
 use std::fs::read_to_string;
