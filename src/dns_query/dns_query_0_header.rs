@@ -58,7 +58,7 @@ impl TryFrom<&[u8]> for DnsQueryHeaderFlags {
   type Error = NoneError;
 
   fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
-    let mut iter = bytes.into_iter();
+    let mut iter = bytes.iter();
     let byte_1 = iter.next()?;
     let byte_2 = iter.next()?;
 
@@ -122,47 +122,63 @@ impl TryFrom<&[u8]> for DnsQueryHeaderFlags {
   }
 }
 
-impl From<&DnsQueryHeaderFlags> for Vec<u8> {
-  fn from(_: &DnsQueryHeaderFlags) -> Self {
-    unimplemented!()
+#[allow(clippy::fallible_impl_from)]
+impl From<&DnsQueryHeaderFlags> for [u8; 2] {
+  fn from(flags: &DnsQueryHeaderFlags) -> Self {
+    let mut byte_1 = 0;
+    let mut byte_2 = 0;
+
+    /* qr */ {
+      let val = flags.qr as u8;
+      debug_assert!(val <= 0b1);
+      byte_1 &= val << 7;
+    }
+
+    /* op_code */ {
+      let val = flags.op_code as u8;
+      debug_assert!(val <= 0b1111);
+      byte_1 &= val << 3;
+    }
+
+    /* aa */ {
+      let val = flags.aa as u8;
+      debug_assert!(val <= 0b1);
+      byte_1 &= val << 2;
+    }
+
+    /* tc */ {
+      let val = flags.tc as u8;
+      debug_assert!(val <= 0b1);
+      byte_1 &= val << 1;
+    }
+
+    /* rd */ {
+      let val = flags.rd as u8;
+      debug_assert!(val <= 0b1);
+      byte_1 &= val;
+    }
+
+    /* ra */ {
+      let val = flags.ra as u8;
+      debug_assert!(val <= 0b1);
+      byte_2 &= val << 7;
+    }
+
+    /* z */ {
+      let val = flags.z as u8;
+      debug_assert!(val <= 0b111);
+      byte_2 &= val << 4;
+    }
+
+    /* r_code */ {
+      let val = flags.r_code as u8;
+      debug_assert!(val <= 0b1111);
+      byte_2 &= val ;
+    }
+
+    [byte_1, byte_2]
   }
 }
-
-// qr
-impl DnsQueryHeaderFlags {
-  fn qr_mut(&mut self, new: &DnsQueryHeaderFlagsQr) {
-    self.0 &= ((*new) as u16) << 15;
-  }
-}
-
-// op_code
-impl DnsQueryHeaderFlags {
-  fn op_code_mut(&mut self, new: &DnsQueryHeaderFlagsOpcode) {
-    self.0 &= ((*new) as u16) << 11;
-  }
-}
-
-// tc
-impl DnsQueryHeaderFlags {
-  fn tc_mut(&mut self, new: &DnsQueryHeaderFlagsTc) {
-    self.0 &= ((*new) as u16) << 9;
-  }
-}
-
-// rd
-impl DnsQueryHeaderFlags {
-  fn rd_mut(&mut self, new: &DnsQueryHeaderFlagsRd) {
-    self.0 &= ((*new) as u16) << 8;
-  }
-}
-
-// ra
-impl DnsQueryHeaderFlags {
-  fn ra_mut(&mut self, new: &DnsQueryHeaderFlagsRa) {
-    self.0 &= ((*new) as u16) << 7;
-  }
-}
-
 
 #[derive(Debug, Copy, Clone)]
 pub(crate) enum DnsQueryHeaderFlagsQr {
@@ -192,7 +208,7 @@ pub(crate) enum DnsQueryHeaderFlagsOpcode {
   _Resv7To15 = 15,  // use largest possible for correct `std::mem::transmute()` parsing
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub(crate) enum DnsQueryHeaderFlagsAa {
   /// 0
   NonAuthAns = 0,
@@ -224,7 +240,7 @@ pub(crate) enum DnsQueryHeaderFlagsRa {
   Available = 1,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub(crate) enum DnsQueryHeaderFlagsRcode {
   /// 0: No error condition
   NoErr = 0,
