@@ -26,7 +26,7 @@ fn main() -> Result<(), TryFromIntError> {
         op_code: DnsQueryHeaderFlagsOpcode::StdQuery,
         aa: DnsQueryHeaderFlagsAa::NonAuthAns,
         tc: DnsQueryHeaderFlagsTc::NonTrunc,
-        rd: DnsQueryHeaderFlagsRd::NotRecur,
+        rd: DnsQueryHeaderFlagsRd::Recur,
         ra: DnsQueryHeaderFlagsRa::NotAvailable,
         z: 0,
         ad: DnsQueryHeaderFlagsAd::NotAuthed,

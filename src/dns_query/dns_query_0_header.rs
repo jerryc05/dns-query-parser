@@ -198,61 +198,61 @@ impl From<&DnsQueryHeaderFlags> for [u8; 2] {
     /* qr */ {
       let val = flags.qr as u8;
       debug_assert!(val <= 0b1);
-      byte_1 &= val << 7;
+      byte_1 |= val << 7;
     }
 
     /* op_code */ {
       let val = flags.op_code as u8;
       debug_assert!(val <= 0b1111);
-      byte_1 &= val << 3;
+      byte_1 |= val << 3;
     }
 
     /* aa */ {
       let val = flags.aa as u8;
       debug_assert!(val <= 0b1);
-      byte_1 &= val << 2;
+      byte_1 |= val << 2;
     }
 
     /* tc */ {
       let val = flags.tc as u8;
       debug_assert!(val <= 0b1);
-      byte_1 &= val << 1;
+      byte_1 |= val << 1;
     }
 
     /* rd */ {
       let val = flags.rd as u8;
       debug_assert!(val <= 0b1);
-      byte_1 &= val;
+      byte_1 |= val;
     }
 
     /* ra */ {
       let val = flags.ra as u8;
       debug_assert!(val <= 0b1);
-      byte_2 &= val << 7;
+      byte_2 |= val << 7;
     }
 
     /* z */ {
       let val = flags.z as u8;
       debug_assert!(val <= 0b1);
-      byte_2 &= val << 6;
+      byte_2 |= val << 6;
     }
 
     /* ad */ {
       let val = flags.ad as u8;
       debug_assert!(val <= 0b1);
-      byte_2 &= val << 5;
+      byte_2 |= val << 5;
     }
 
     /* cd */ {
       let val = flags.cd as u8;
       debug_assert!(val <= 0b1);
-      byte_2 &= val << 4;
+      byte_2 |= val << 4;
     }
 
     /* r_code */ {
       let val = flags.r_code as u8;
       debug_assert!(val <= 0b1111);
-      byte_2 &= val;
+      byte_2 |= val;
     }
 
     [byte_1, byte_2]
