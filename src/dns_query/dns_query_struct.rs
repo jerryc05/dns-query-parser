@@ -6,6 +6,7 @@ use std::option::NoneError;
 use std::slice::Iter;
 
 /// [RFC 1035](https://tools.ietf.org/html/rfc1035)
+/// [RFC 2535](https://tools.ietf.org/html/rfc2535)
 #[derive(Debug)]
 pub struct DnsQuery {
   pub(crate) header: DnsQueryHeader,

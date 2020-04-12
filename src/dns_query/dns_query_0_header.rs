@@ -15,7 +15,7 @@ Header format
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 |                      id                       |
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|qr|  op_code  |aa|tc|rd|ra|   z    |  r_code   |
+|qr|  op_code  |aa|tc|rd|ra| z|ad|cd|  r_code   |
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 |                   qd_count                    |
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -80,7 +80,7 @@ impl From<&DnsQueryHeader> for [u8; 12] {
  15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
   0  1  2  3  4  5  6  7  0  1  2  3  4  5  6  7
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|qr|  op_code  |aa|tc|rd|ra|   z    |  r_code   |
+|qr|  op_code  |aa|tc|rd|ra| z|ad|cd|  r_code   |
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 */
 #[derive(Debug)]
@@ -92,6 +92,8 @@ pub(crate) struct DnsQueryHeaderFlags {
   rd: DnsQueryHeaderFlagsRd,
   ra: DnsQueryHeaderFlagsRa,
   z: u8,
+  ad: DnsQueryHeaderFlagsAd,
+  cd: DnsQueryHeaderFlagsCd,
   r_code: DnsQueryHeaderFlagsRcode,
 }
 
@@ -146,9 +148,23 @@ impl TryFrom<&mut Iter<'_, u8>> for DnsQueryHeaderFlags {
 
     /* z */
     let z = {
-      let val = ((byte_2 >> 3) & 0b111) as u8;
-      debug_assert!(val <= 0b111);
+      let val = ((byte_2 >> 6) & 0b1) as u8;
+      debug_assert!(val <= 0b1);
       val
+    };
+
+    /* ad */
+    let ad = {
+      let val = ((byte_2 >> 5) & 0b1) as u8;
+      debug_assert!(val <= 0b1);
+      unsafe { transmute::<u8, DnsQueryHeaderFlagsAd>(val) }
+    };
+
+    /* cd */
+    let cd = {
+      let val = ((byte_2 >> 4) & 0b1) as u8;
+      debug_assert!(val <= 0b1);
+      unsafe { transmute::<u8, DnsQueryHeaderFlagsCd>(val) }
     };
 
     /* r_code */
@@ -158,7 +174,18 @@ impl TryFrom<&mut Iter<'_, u8>> for DnsQueryHeaderFlags {
       unsafe { transmute::<u8, DnsQueryHeaderFlagsRcode>(val) }
     };
 
-    Ok(Self { qr, op_code, aa, tc, rd, ra, z, r_code })
+    Ok(Self {
+      qr,
+      op_code,
+      aa,
+      tc,
+      rd,
+      ra,
+      z,
+      ad,
+      cd,
+      r_code,
+    })
   }
 }
 
@@ -206,7 +233,19 @@ impl From<&DnsQueryHeaderFlags> for [u8; 2] {
 
     /* z */ {
       let val = flags.z as u8;
-      debug_assert!(val <= 0b111);
+      debug_assert!(val <= 0b1);
+      byte_2 &= val << 6;
+    }
+
+    /* ad */ {
+      let val = flags.ad as u8;
+      debug_assert!(val <= 0b1);
+      byte_2 &= val << 5;
+    }
+
+    /* cd */ {
+      let val = flags.cd as u8;
+      debug_assert!(val <= 0b1);
       byte_2 &= val << 4;
     }
 
@@ -281,6 +320,22 @@ pub(crate) enum DnsQueryHeaderFlagsRa {
 }
 
 #[derive(Debug, Copy, Clone)]
+pub(crate) enum DnsQueryHeaderFlagsAd {
+  /// 0
+  NotAuthed = 0,
+  /// 1
+  Authed = 1,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub(crate) enum DnsQueryHeaderFlagsCd {
+  /// 0
+  Checked = 0,
+  /// 1
+  NotChecked = 1,
+}
+
+#[derive(Debug, Copy, Clone)]
 pub(crate) enum DnsQueryHeaderFlagsRcode {
   /// 0: No error condition
   NoErr = 0,
@@ -300,7 +355,7 @@ pub(crate) enum DnsQueryHeaderFlagsRcode {
   ///              for policy reasons.  For example, a name server may not
   ///              wish to provide the information to the particular requester,
   ///              or a name server may not wish to perform a particular
-  ///              operation (e.g., zone transfer) for particular data.
+  ///              operation (e.g., z//one transfer) for particular data.
   Refused = 5,
   /// 6: A name that should not exist does exist.
   NameExist = 6,
@@ -308,10 +363,10 @@ pub(crate) enum DnsQueryHeaderFlagsRcode {
   ResRecordExist = 7,
   /// 8: A resource record set that should exist does not exist.
   ResRecordNotExist = 8,
-  /// 9: DNS server is not authoritative for the zone named in the Zone section.
+  /// 9: DNS server is not authoritative for the z//one named in the Zone section.
   ZoneNotAuth = 9,
   /// 10: A name used in the Prerequisite or Update sections is not within the
-  ///     zone specified by the Zone section.
+  ///     z//one specified by the Zone section.
   NameNotInZone = 10,
   /// 11-15: Reserved for future use.
   _Resv11To15 = 15,  // use largest possible for correct `std::mem::transmute()` parsing
