@@ -27,13 +27,13 @@ Header format
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 */
 #[derive(Debug)]
-pub(crate) struct DnsQueryHeader {
-  pub(crate) id: u16,
-  pub(crate) flags: DnsQueryHeaderFlags,
-  pub(crate) qd_count: u16,
-  pub(crate) an_count: u16,
-  pub(crate) ns_count: u16,
-  pub(crate) ar_count: u16,
+pub struct DnsQueryHeader {
+  pub id: u16,
+  pub flags: DnsQueryHeaderFlags,
+  pub qd_count: u16,
+  pub an_count: u16,
+  pub ns_count: u16,
+  pub ar_count: u16,
 }
 
 impl TryFrom<&mut Iter<'_, u8>> for DnsQueryHeader {
@@ -84,17 +84,17 @@ impl From<&DnsQueryHeader> for [u8; 12] {
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 */
 #[derive(Debug)]
-pub(crate) struct DnsQueryHeaderFlags {
-  qr: DnsQueryHeaderFlagsQr,
-  op_code: DnsQueryHeaderFlagsOpcode,
-  aa: DnsQueryHeaderFlagsAa,
-  tc: DnsQueryHeaderFlagsTc,
-  rd: DnsQueryHeaderFlagsRd,
-  ra: DnsQueryHeaderFlagsRa,
-  z: u8,
-  ad: DnsQueryHeaderFlagsAd,
-  cd: DnsQueryHeaderFlagsCd,
-  r_code: DnsQueryHeaderFlagsRcode,
+pub struct DnsQueryHeaderFlags {
+  pub qr: DnsQueryHeaderFlagsQr,
+  pub op_code: DnsQueryHeaderFlagsOpcode,
+  pub aa: DnsQueryHeaderFlagsAa,
+  pub tc: DnsQueryHeaderFlagsTc,
+  pub rd: DnsQueryHeaderFlagsRd,
+  pub ra: DnsQueryHeaderFlagsRa,
+  pub z: u8,
+  pub ad: DnsQueryHeaderFlagsAd,
+  pub cd: DnsQueryHeaderFlagsCd,
+  pub r_code: DnsQueryHeaderFlagsRcode,
 }
 
 impl TryFrom<&mut Iter<'_, u8>> for DnsQueryHeaderFlags {
@@ -260,7 +260,7 @@ impl From<&DnsQueryHeaderFlags> for [u8; 2] {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub(crate) enum DnsQueryHeaderFlagsQr {
+pub enum DnsQueryHeaderFlagsQr {
   /// 0: a query (0)
   Query = 0,
   /// 1: a response (1)
@@ -268,7 +268,7 @@ pub(crate) enum DnsQueryHeaderFlagsQr {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub(crate) enum DnsQueryHeaderFlagsOpcode {
+pub enum DnsQueryHeaderFlagsOpcode {
   /// 0: a standard query (QUERY)
   StdQuery = 0,
   /// 1: an inverse query (IQUERY)
@@ -288,7 +288,7 @@ pub(crate) enum DnsQueryHeaderFlagsOpcode {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub(crate) enum DnsQueryHeaderFlagsAa {
+pub enum DnsQueryHeaderFlagsAa {
   /// 0
   NonAuthAns = 0,
   /// 1
@@ -296,7 +296,7 @@ pub(crate) enum DnsQueryHeaderFlagsAa {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub(crate) enum DnsQueryHeaderFlagsTc {
+pub enum DnsQueryHeaderFlagsTc {
   /// 0
   NonTrunc = 0,
   /// 1
@@ -304,7 +304,7 @@ pub(crate) enum DnsQueryHeaderFlagsTc {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub(crate) enum DnsQueryHeaderFlagsRd {
+pub enum DnsQueryHeaderFlagsRd {
   /// 0
   NotRecur = 0,
   /// 1
@@ -312,7 +312,7 @@ pub(crate) enum DnsQueryHeaderFlagsRd {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub(crate) enum DnsQueryHeaderFlagsRa {
+pub enum DnsQueryHeaderFlagsRa {
   /// 0
   NotAvailable = 0,
   /// 1
@@ -320,7 +320,7 @@ pub(crate) enum DnsQueryHeaderFlagsRa {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub(crate) enum DnsQueryHeaderFlagsAd {
+pub enum DnsQueryHeaderFlagsAd {
   /// 0
   NotAuthed = 0,
   /// 1
@@ -328,7 +328,7 @@ pub(crate) enum DnsQueryHeaderFlagsAd {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub(crate) enum DnsQueryHeaderFlagsCd {
+pub enum DnsQueryHeaderFlagsCd {
   /// 0
   Checked = 0,
   /// 1
@@ -336,7 +336,7 @@ pub(crate) enum DnsQueryHeaderFlagsCd {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub(crate) enum DnsQueryHeaderFlagsRcode {
+pub enum DnsQueryHeaderFlagsRcode {
   /// 0: No error condition
   NoErr = 0,
   /// 1: Format error - The name server was unable to interpret the query.

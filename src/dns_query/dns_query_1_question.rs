@@ -6,6 +6,7 @@ use std::convert::TryFrom;
 use std::num::TryFromIntError;
 use std::option::NoneError;
 use std::slice::Iter;
+use std::borrow::Cow;
 
 /*
 Question format
@@ -23,13 +24,13 @@ Question format
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 */
 #[derive(Debug)]
-pub(crate) struct DnsQueryQuestion {
-  pub(crate) q_name: String,
-  pub(crate) q_type: DnsQueryType,
-  pub(crate) q_class: DnsQueryClass,
+pub struct DnsQueryQuestion<'a> {
+  pub q_name: Cow<'a, str>,
+  pub q_type: DnsQueryType,
+  pub q_class: DnsQueryClass,
 }
 
-impl TryFrom<&mut Iter<'_, u8>> for DnsQueryQuestion {
+impl<'a> TryFrom<&mut Iter<'_, u8>> for DnsQueryQuestion<'a> {
   type Error = NoneError;
 
   fn try_from(iter: &mut Iter<'_, u8>) -> Result<Self, Self::Error> {
@@ -37,7 +38,7 @@ impl TryFrom<&mut Iter<'_, u8>> for DnsQueryQuestion {
     let q_name = {
       let mut val = String::new();
       iter_to_str(iter, &mut val);
-      val
+      Cow::from(val)
     };
 
     /* Parse q_type  */
@@ -50,10 +51,10 @@ impl TryFrom<&mut Iter<'_, u8>> for DnsQueryQuestion {
   }
 }
 
-impl TryFrom<DnsQueryQuestion> for Vec<u8> {
+impl<'a> TryFrom<&DnsQueryQuestion<'a>> for Vec<u8> {
   type Error = TryFromIntError;
 
-  fn try_from(question: DnsQueryQuestion) -> Result<Self, Self::Error> {
+  fn try_from(question: &DnsQueryQuestion) -> Result<Self, Self::Error> {
     let mut result = vec![];
 
     /* Parse q_name */ {
@@ -78,6 +79,7 @@ impl TryFrom<DnsQueryQuestion> for Vec<u8> {
       result.extend_from_slice(&q_class.to_be_bytes());
     }
 
+    result.shrink_to_fit();
     Ok(result)
   }
 }

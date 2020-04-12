@@ -45,7 +45,7 @@ pub(crate) fn iter_to_u32_be(iter: &mut Iter<u8>
 }
 
 #[derive(Debug, Copy, Clone)]
-pub(crate) enum DnsQueryType {
+pub enum DnsQueryType {
   /// a host address
   A = 1,
   /// an authoritative name server
@@ -218,7 +218,7 @@ impl From<&DnsQueryType> for u16 {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub(crate) enum DnsQueryClass {
+pub enum DnsQueryClass {
   /// 0: Reserved
   _Resv0 = 0,
   /// 1: Internet (IN)

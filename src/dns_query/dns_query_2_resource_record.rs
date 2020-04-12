@@ -35,7 +35,7 @@ Answer/Authority/Additional format
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 */
 #[derive(Debug)]
-pub(crate) struct DnsQueryResourceRecord {
+pub struct DnsQueryResourceRecord {
   name: String,
   type_: DnsQueryType,
   class: DnsQueryClass,
@@ -45,7 +45,7 @@ pub(crate) struct DnsQueryResourceRecord {
 }
 
 #[derive(Debug)]
-pub(crate) enum DnsQueryResourceRecordRDataType {
+pub enum DnsQueryResourceRecordRDataType {
   Ipv4Addr(Ipv4Addr),
   String(String),
   _Other(Vec<u8>),
