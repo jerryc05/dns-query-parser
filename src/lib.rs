@@ -12,7 +12,7 @@ pub fn start() {
   let entries = parse_hosts().unwrap();
   println!("{}", entries);
 
-  for entry in entries.as_ref() {
+  for entry in entries.iter() {
     let dur = tcping(SocketAddr::new(entry.ip, 80));
     println!("{:#12?}: {:19} {}", dur, entry.ip, entry.host);
     // println!("{:?}\n", lookup_host(entry.host.as_ref()).unwrap());

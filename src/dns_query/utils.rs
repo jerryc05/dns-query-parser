@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
 use std::slice::Iter;
-use std::str::from_utf8_unchecked;
 use std::mem::transmute;
 use std::option::NoneError;
 
