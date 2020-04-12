@@ -2,8 +2,10 @@
 
 use DnsQueryHeaderFlagsQr::{Query, Response};
 use std::mem::transmute;
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use std::option::NoneError;
+use std::slice::Iter;
+use crate::dns_query::utils::iter_to_u16_be;
 
 /*
 Header format
@@ -34,6 +36,45 @@ pub(crate) struct DnsQueryHeader {
   pub(crate) ar_count: u16,
 }
 
+impl TryFrom<&mut Iter<'_, u8>> for DnsQueryHeader {
+  type Error = NoneError;
+
+  fn try_from(iter: &mut Iter<'_, u8>) -> Result<Self, Self::Error> {
+    let id = iter_to_u16_be(iter)?;
+
+    let flags = iter.try_into()?;
+
+    let qd_count = iter_to_u16_be(iter)?;
+
+    let an_count = iter_to_u16_be(iter)?;
+
+    let ns_count = iter_to_u16_be(iter)?;
+
+    let ar_count = iter_to_u16_be(iter)?;
+
+    Ok(Self { id, flags, qd_count, an_count, ns_count, ar_count })
+  }
+}
+
+impl From<&DnsQueryHeader> for [u8; 12] {
+  fn from(header: &DnsQueryHeader) -> Self {
+    let b1b2 = header.id.to_be_bytes();
+
+    let b3b4: [u8; 2] = (&header.flags).into();
+
+    let b5b6 = header.qd_count.to_be_bytes();
+
+    let b7b8 = header.an_count.to_be_bytes();
+
+    let b9b10 = header.ns_count.to_be_bytes();
+
+    let b11b12 = header.ar_count.to_be_bytes();
+
+    [b1b2[0], b1b2[1], b3b4[0], b3b4[1], b5b6[0], b5b6[1],
+      b7b8[0], b7b8[1], b9b10[0], b9b10[1], b11b12[0], b11b12[1]]
+  }
+}
+
 /*
   7  6  5  4  3  2  1  0  7  6  5  4  3  2  1  0
  15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
@@ -54,11 +95,10 @@ pub(crate) struct DnsQueryHeaderFlags {
   r_code: DnsQueryHeaderFlagsRcode,
 }
 
-impl TryFrom<&[u8]> for DnsQueryHeaderFlags {
+impl TryFrom<&mut Iter<'_, u8>> for DnsQueryHeaderFlags {
   type Error = NoneError;
 
-  fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
-    let mut iter = bytes.iter();
+  fn try_from(iter: &mut Iter<'_, u8>) -> Result<Self, Self::Error> {
     let byte_1 = iter.next()?;
     let byte_2 = iter.next()?;
 
@@ -173,7 +213,7 @@ impl From<&DnsQueryHeaderFlags> for [u8; 2] {
     /* r_code */ {
       let val = flags.r_code as u8;
       debug_assert!(val <= 0b1111);
-      byte_2 &= val ;
+      byte_2 &= val;
     }
 
     [byte_1, byte_2]

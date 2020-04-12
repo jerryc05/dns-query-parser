@@ -5,6 +5,7 @@ use crate::dns_query::utils::{iter_to_str, iter_to_u16_be,
 use std::convert::TryFrom;
 use std::num::TryFromIntError;
 use std::option::NoneError;
+use std::slice::Iter;
 
 /*
 Question format
@@ -28,24 +29,22 @@ pub(crate) struct DnsQueryQuestion {
   pub(crate) q_class: DnsQueryClass,
 }
 
-impl TryFrom<&[u8]> for DnsQueryQuestion {
+impl TryFrom<&mut Iter<'_, u8>> for DnsQueryQuestion {
   type Error = NoneError;
 
-  fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
-    let mut iter = bytes.iter();
-
+  fn try_from(iter: &mut Iter<'_, u8>) -> Result<Self, Self::Error> {
     /* Parse q_name */
     let q_name = {
-      let mut q_name = String::new();
-      iter_to_str(&mut iter, &mut q_name);
-      q_name
+      let mut val = String::new();
+      iter_to_str(iter, &mut val);
+      val
     };
 
     /* Parse q_type  */
-    let q_type = iter_to_u16_be(&mut iter)?.into();
+    let q_type = iter_to_u16_be(iter)?.into();
 
     /* Parse q_class */
-    let q_class = iter_to_u16_be(&mut iter)?.into();
+    let q_class = iter_to_u16_be(iter)?.into();
 
     Ok(Self { q_name, q_type, q_class })
   }
