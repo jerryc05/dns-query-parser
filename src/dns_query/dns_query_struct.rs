@@ -2,7 +2,7 @@ use crate::dns_query::dns_query_0_header::DnsQueryHeader;
 use crate::dns_query::dns_query_1_question::DnsQueryQuestion;
 use crate::dns_query::dns_query_2_resource_record::DnsQueryResourceRecord;
 
-/// https://tools.ietf.org/html/rfc1035
+/// [RFC 1035](https://tools.ietf.org/html/rfc1035)
 #[derive(Debug)]
 pub(crate) struct DnsQuery {
   pub(crate) header: DnsQueryHeader,

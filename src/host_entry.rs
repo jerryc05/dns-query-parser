@@ -70,24 +70,20 @@ pub(crate) fn parse_hosts() -> Result<HostEntryVec, Error> {
     let desc;
     {
       let host_n_desc;
-      match ip_splitter.next() {
-        Some(host_n_desc_) => host_n_desc = host_n_desc_,
-        None => {
-          eprintln!("Invalid host and desc [{}]!", line);
-          continue;
-        }
+      if let Some(host_n_desc_) = ip_splitter.next() {
+        host_n_desc = host_n_desc_
+      } else {
+        eprintln!("Invalid host and desc [{}]!", line);
+        continue;
       }
 
       let mut host_splitter = host_n_desc.splitn(2, '#');
-      match host_splitter.next() {
-        Some(host_) => {
-          host = host_;
-          desc = host_splitter.next().unwrap_or("")
-        }
-        None => {
-          host = host_n_desc;
-          desc = "";
-        }
+      if let Some(host_) = host_splitter.next() {
+        host = host_;
+        desc = host_splitter.next().unwrap_or("")
+      } else {
+        host = host_n_desc;
+        desc = "";
       }
     }
 
