@@ -35,11 +35,11 @@ impl TryFrom<&[u8]> for DnsQueryQuestion {
     let mut iter = bytes.iter();
 
     /* Parse q_name */
-    let mut q_name;
-    {
-      q_name = String::new();
+    let q_name = {
+      let mut q_name = String::new();
       iter_to_str(&mut iter, &mut q_name);
-    }
+      q_name
+    };
 
     /* Parse q_type  */
     let q_type = iter_to_u16_be(&mut iter)?.into();

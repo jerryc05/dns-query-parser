@@ -57,11 +57,12 @@ impl TryFrom<&[u8]> for DnsQueryResourceRecord {
     #[allow(invalid_value)]
       let mut iter = bytes.iter();
 
-    /* Parse name */ let mut name;
-    {
-      name = String::new();
+    /* Parse name */
+    let name = {
+      let mut name = String::new();
       iter_to_str(&mut iter, &mut name);
-    }
+      name
+    };
 
     /* Parse type_ */
     let type_ = iter_to_u16_be(&mut iter)?.into();

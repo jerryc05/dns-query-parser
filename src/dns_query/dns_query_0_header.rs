@@ -2,6 +2,8 @@
 
 use DnsQueryHeaderFlagsQr::{Query, Response};
 use std::mem::transmute;
+use std::convert::TryFrom;
+use std::option::NoneError;
 
 /*
 Header format
@@ -33,6 +35,7 @@ pub(crate) struct DnsQueryHeader {
 }
 
 /*
+  7  6  5  4  3  2  1  0  7  6  5  4  3  2  1  0
  15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
   0  1  2  3  4  5  6  7  0  1  2  3  4  5  6  7
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -40,18 +43,93 @@ pub(crate) struct DnsQueryHeader {
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 */
 #[derive(Debug)]
-pub(crate) struct DnsQueryHeaderFlags(u16);
+pub(crate) struct DnsQueryHeaderFlags {
+  qr: DnsQueryHeaderFlagsQr,
+  op_code: DnsQueryHeaderFlagsOpcode,
+  aa: DnsQueryHeaderFlagsAa,
+  tc: DnsQueryHeaderFlagsTc,
+  rd: DnsQueryHeaderFlagsRd,
+  ra: DnsQueryHeaderFlagsRa,
+  z: u8,
+  r_code: DnsQueryHeaderFlagsRcode,
+}
+
+impl TryFrom<&[u8]> for DnsQueryHeaderFlags {
+  type Error = NoneError;
+
+  fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
+    let mut iter = bytes.into_iter();
+    let byte_1 = iter.next()?;
+    let byte_2 = iter.next()?;
+
+    /* qr */
+    let qr = {
+      let val = (byte_1 >> 7) as u8;
+      debug_assert!(val <= 0b1);
+      if val == 0 { Query } else { Response }
+    };
+
+    /* op_code */
+    let op_code = {
+      let val = ((byte_1 >> 3) & 0b1111) as u8;
+      debug_assert!(val <= 0b1111);
+      unsafe { transmute::<u8, DnsQueryHeaderFlagsOpcode>(val) }
+    };
+
+    /* aa */
+    let aa = {
+      let val = ((byte_1 >> 2) & 0b1) as u8;
+      debug_assert!(val <= 0b1);
+      unsafe { transmute::<u8, DnsQueryHeaderFlagsAa>(val) }
+    };
+
+    /* tc */
+    let tc = {
+      let val = ((byte_1 >> 1) & 0b1) as u8;
+      debug_assert!(val <= 0b1);
+      unsafe { transmute::<u8, DnsQueryHeaderFlagsTc>(val) }
+    };
+
+    /* rd */
+    let rd = {
+      let val = (byte_1 & 0b1) as u8;
+      debug_assert!(val <= 0b1);
+      unsafe { transmute::<u8, DnsQueryHeaderFlagsRd>(val) }
+    };
+
+    /* ra */
+    let ra = {
+      let val = ((byte_2 >> 7) & 0b1) as u8;
+      debug_assert!(val <= 0b1);
+      unsafe { transmute::<u8, DnsQueryHeaderFlagsRa>(val) }
+    };
+
+    /* z */
+    let z = {
+      let val = ((byte_2 >> 3) & 0b111) as u8;
+      debug_assert!(val <= 0b111);
+      val
+    };
+
+    /* r_code */
+    let r_code = {
+      let val = (byte_2 & 0b1111) as u8;
+      debug_assert!(val <= 0b1111);
+      unsafe { transmute::<u8, DnsQueryHeaderFlagsRcode>(val) }
+    };
+
+    Ok(Self { qr, op_code, aa, tc, rd, ra, z, r_code })
+  }
+}
+
+impl From<&DnsQueryHeaderFlags> for Vec<u8> {
+  fn from(_: &DnsQueryHeaderFlags) -> Self {
+    unimplemented!()
+  }
+}
 
 // qr
 impl DnsQueryHeaderFlags {
-  fn qr(&self) -> DnsQueryHeaderFlagsQr {
-    let val = ((self.0 >> 15) & 0b1) as u8;
-    match val {
-      0 => Query,
-      1 => Response,
-      _ => panic!("Invalid [qr] in header: [{}]!", val)
-    }
-  }
   fn qr_mut(&mut self, new: &DnsQueryHeaderFlagsQr) {
     self.0 &= ((*new) as u16) << 15;
   }
@@ -59,29 +137,13 @@ impl DnsQueryHeaderFlags {
 
 // op_code
 impl DnsQueryHeaderFlags {
-  fn op_code(&self) -> DnsQueryHeaderFlagsOpcode {
-    let val = ((self.0 >> 11) & 0b1111) as u8;
-    unsafe { transmute::<u8, DnsQueryHeaderFlagsOpcode>(val) }
-  }
   fn op_code_mut(&mut self, new: &DnsQueryHeaderFlagsOpcode) {
     self.0 &= ((*new) as u16) << 11;
   }
 }
 
-// aa
-impl DnsQueryHeaderFlags {
-  fn aa(&self) -> DnsQueryHeaderFlagsAa {
-    let val = ((self.0 >> 10) & 0b1) as u8;
-    unsafe { transmute::<u8, DnsQueryHeaderFlagsAa>(val) }
-  }
-}
-
 // tc
 impl DnsQueryHeaderFlags {
-  fn tc(&self) -> DnsQueryHeaderFlagsTc {
-    let val = ((self.0 >> 9) & 0b1) as u8;
-    unsafe { transmute::<u8, DnsQueryHeaderFlagsTc>(val) }
-  }
   fn tc_mut(&mut self, new: &DnsQueryHeaderFlagsTc) {
     self.0 &= ((*new) as u16) << 9;
   }
@@ -89,10 +151,6 @@ impl DnsQueryHeaderFlags {
 
 // rd
 impl DnsQueryHeaderFlags {
-  fn rd(&self) -> DnsQueryHeaderFlagsRd {
-    let val = ((self.0 >> 8) & 0b1) as u8;
-    unsafe { transmute::<u8, DnsQueryHeaderFlagsRd>(val) }
-  }
   fn rd_mut(&mut self, new: &DnsQueryHeaderFlagsRd) {
     self.0 &= ((*new) as u16) << 8;
   }
@@ -100,22 +158,8 @@ impl DnsQueryHeaderFlags {
 
 // ra
 impl DnsQueryHeaderFlags {
-  fn ra(&self) -> DnsQueryHeaderFlagsRa {
-    let val = ((self.0 >> 7) & 0b1) as u8;
-    unsafe { transmute::<u8, DnsQueryHeaderFlagsRa>(val) }
-  }
   fn ra_mut(&mut self, new: &DnsQueryHeaderFlagsRa) {
     self.0 &= ((*new) as u16) << 7;
-  }
-}
-
-// z
-
-// r_code
-impl DnsQueryHeaderFlags {
-  fn r_code(&self) -> DnsQueryHeaderFlagsRcode {
-    let val = (self.0 & 0b1111) as u8;
-    unsafe { transmute::<u8, DnsQueryHeaderFlagsRcode>(val) }
   }
 }
 
