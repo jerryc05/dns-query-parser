@@ -1,10 +1,22 @@
-use crate::dns_query::dns_query_0_header::DnsQueryHeader;
+use crate::dns_query::dns_query_0_header::{DnsQueryHeader,
+                                           DnsQueryHeaderFlags,
+                                           DnsQueryHeaderFlagsQr,
+                                           DnsQueryHeaderFlagsOpcode,
+                                           DnsQueryHeaderFlagsAa,
+                                           DnsQueryHeaderFlagsTc,
+                                           DnsQueryHeaderFlagsRd,
+                                           DnsQueryHeaderFlagsRa,
+                                           DnsQueryHeaderFlagsAd,
+                                           DnsQueryHeaderFlagsCd,
+                                           DnsQueryHeaderFlagsRcode};
 use crate::dns_query::dns_query_1_question::DnsQueryQuestion;
 use crate::dns_query::dns_query_2_resource_record::DnsQueryResourceRecord;
+use crate::dns_query::utils::{DnsQueryType, DnsQueryClass};
 use std::convert::{TryFrom, TryInto};
 use std::option::NoneError;
 use std::slice::Iter;
 use std::num::TryFromIntError;
+use std::borrow::Cow;
 
 /*
  *  Reference:
@@ -16,6 +28,37 @@ use std::num::TryFromIntError;
 pub struct DnsRequestQuery<'a> {
   pub header: DnsQueryHeader,
   pub question: DnsQueryQuestion<'a>,
+}
+
+impl<'a> DnsRequestQuery<'a> {
+  pub const fn from_url(cow_str: Cow<'a, str>) -> Self {
+    Self {
+      header: DnsQueryHeader {
+        id: 0,
+        flags: DnsQueryHeaderFlags {
+          qr: DnsQueryHeaderFlagsQr::Query,
+          op_code: DnsQueryHeaderFlagsOpcode::StdQuery,
+          aa: DnsQueryHeaderFlagsAa::NonAuthAns,
+          tc: DnsQueryHeaderFlagsTc::NonTrunc,
+          rd: DnsQueryHeaderFlagsRd::Recur,
+          ra: DnsQueryHeaderFlagsRa::NotAvailable,
+          z: 0,
+          ad: DnsQueryHeaderFlagsAd::NotAuthed,
+          cd: DnsQueryHeaderFlagsCd::Checked,
+          r_code: DnsQueryHeaderFlagsRcode::NoErr,
+        },
+        qd_count: 1,
+        an_count: 0,
+        ns_count: 0,
+        ar_count: 0,
+      },
+      question: DnsQueryQuestion {
+        q_name: cow_str,
+        q_type: DnsQueryType::A,
+        q_class: DnsQueryClass::In,
+      },
+    }
+  }
 }
 
 impl<'a> TryFrom<&DnsRequestQuery<'a>> for Vec<u8> {
