@@ -1,8 +1,17 @@
 #![feature(try_trait)]
 
 use dns_query_parser::dns_query::dns_query_struct::DnsRequestQuery;
-use std::convert::TryInto;
-use dns_query_parser::dns_query::dns_query_0_header::{DnsQueryHeader, DnsQueryHeaderFlags, DnsQueryHeaderFlagsRcode, DnsQueryHeaderFlagsQr, DnsQueryHeaderFlagsOpcode, DnsQueryHeaderFlagsAa, DnsQueryHeaderFlagsTc, DnsQueryHeaderFlagsRd, DnsQueryHeaderFlagsRa, DnsQueryHeaderFlagsAd, DnsQueryHeaderFlagsCd};
+use std::convert::TryFrom;
+use dns_query_parser::dns_query::dns_query_0_header::{DnsQueryHeader, DnsQueryHeaderFlags,
+                                                      DnsQueryHeaderFlagsRcode,
+                                                      DnsQueryHeaderFlagsQr,
+                                                      DnsQueryHeaderFlagsOpcode,
+                                                      DnsQueryHeaderFlagsAa,
+                                                      DnsQueryHeaderFlagsTc,
+                                                      DnsQueryHeaderFlagsRd,
+                                                      DnsQueryHeaderFlagsRa,
+                                                      DnsQueryHeaderFlagsAd,
+                                                      DnsQueryHeaderFlagsCd};
 use dns_query_parser::dns_query::dns_query_1_question::DnsQueryQuestion;
 use std::borrow::Cow;
 use dns_query_parser::dns_query::utils::{DnsQueryType, DnsQueryClass};
@@ -39,14 +48,17 @@ fn main() -> Result<(), TryFromIntError> {
       ar_count: 0,
     },
     question: DnsQueryQuestion {
-      q_name: Cow::from("www.google.com"),
+      q_name: Cow::from("www.example.com"),
       q_type: DnsQueryType::A,
-      q_class: DnsQueryClass::_Resv0,
+      q_class: DnsQueryClass::In,
     },
   };
 
-  let v: Vec<_> = (&query).try_into()?;
-  println!("{:x?}", v);
+  for b in Vec::try_from(&query)?.into_iter(){
+    print!("{:02x} ", b);
+  }
+  // AAABAAABAAAAAAAAA3d3dwdleGFtcGxlA2NvbQABAAE=
+  // AAABAAABAAAAAAAAA3d3dwdleGFtcGxlA2NvbQAAAQAB
 
   Ok(())
 }
