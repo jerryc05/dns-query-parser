@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
-use crate::dns_query::utils::{iter_to_str, iter_to_u16_be, DnsQueryType, DnsQueryClass,
-                              str_to_vec};
+use crate::dns_query::utils::{iter_to_str, str_to_vec, iter_to_u16_be,
+                              DnsQueryType, DnsQueryClass};
 use std::convert::TryFrom;
 use std::num::TryFromIntError;
 use std::option::NoneError;
