@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
-use crate::dns_query::utils::{iter_to_str, iter_to_u16_be,
-                              DnsQueryType, DnsQueryClass};
+use crate::dns_query::utils::{iter_to_str, iter_to_u16_be, DnsQueryType, DnsQueryClass,
+                              str_to_vec};
 use std::convert::TryFrom;
 use std::num::TryFromIntError;
 use std::option::NoneError;
@@ -58,15 +58,7 @@ impl<'a> TryFrom<&DnsQueryQuestion<'a>> for Vec<u8> {
     let mut result = vec![];
 
     /* Parse q_name */ {
-      for word in question.q_name.split('.') {
-        let len = word.len();
-        #[allow(clippy::cast_possible_truncation)] let len_u8 = len as u8;
-        debug_assert!(len_u8 == u8::try_from(len)?);
-        result.push(len_u8);
-        for i in 0..len {
-          result.push(word.as_bytes()[i]);
-        }
-      }
+      str_to_vec(&question.q_name, &mut result)?;
     }
 
     /* Parse q_type */ {

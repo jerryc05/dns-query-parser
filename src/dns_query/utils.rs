@@ -3,6 +3,8 @@
 use std::slice::Iter;
 use std::mem::transmute;
 use std::option::NoneError;
+use std::convert::TryFrom;
+use std::num::TryFromIntError;
 
 #[inline]
 pub(crate) fn iter_to_str(iter: &mut Iter<u8>, str: &mut String) {
@@ -29,6 +31,31 @@ pub(crate) fn iter_to_str(iter: &mut Iter<u8>, str: &mut String) {
       }
     }
   }
+}
+
+#[inline]
+pub(crate) fn str_to_vec(str: &str, vec: &mut Vec<u8>) -> Result<(), TryFromIntError> {
+  for word in str.split_terminator('.') {
+    let len = word.len();
+
+    /* handle len */ {
+      #[allow(clippy::cast_possible_truncation)] let len_u8 = len as u8;
+      debug_assert!(len_u8 == u8::try_from(len)?);
+      vec.push(len_u8);
+    }
+
+    /* handle bytes */ {
+      for i in 0..len {
+        vec.push(word.as_bytes()[i]);
+      }
+    }
+  }
+
+  /* handle terminator */ {
+    vec.push(0_u8);
+  }
+
+  Ok(())
 }
 
 #[inline]
